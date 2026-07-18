@@ -1146,7 +1146,7 @@ export default function Home() {
                   id="btn-whatsapp-footer-cta"
                 >
                   <Phone size={16} />
-                  <span>Chamar no WhatsApp (19) 99944-9438</span>
+                  <span>Chamar no WhatsApp (19) 99449-4386</span>
                 </a>
 
                 <a 
@@ -1227,7 +1227,7 @@ export default function Home() {
                       type="tel" 
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="Ex: (19) 99944-9438" 
+                      placeholder="Ex: (19) 99449-4386" 
                       required
                       className="w-full bg-[#F7F8FA] border border-gray-300 rounded-lg p-2.5 text-xs text-[#1A1A2E] focus:outline-none focus:border-[#C9A227]"
                     />
