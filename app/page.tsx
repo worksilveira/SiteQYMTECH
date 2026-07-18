@@ -137,7 +137,7 @@ export default function Home() {
       `Olá QYM Tech! Meu nome é ${contactName} (${contactRole}) do município de ${contactCity || 'nossa cidade'}. Fiz a simulação no site e gostaria de solicitar uma demonstração do Portal de Legislação Municipal.`
     );
     setTimeout(() => {
-      window.open(`https://wa.me/5519999449438?text=${whatsappText}`, '_blank');
+      window.open(`https://wa.me/5519994494386?text=${whatsappText}`, '_blank');
     }, 1500);
   };
 
