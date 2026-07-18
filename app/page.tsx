@@ -1311,7 +1311,7 @@ export default function Home() {
               <div className="text-xs text-gray-300 space-y-1.5">
                 <p className="font-semibold text-white">QYM Tecnologia e Consultoria</p>
                 <p>CNPJ: 68.004.772/0001-35</p>
-                <p>Telefone comercial: (19) 99944-9438</p>
+                <p>Telefone comercial: 55 (19) 994494386 </p>
                 <p>E-mail: contato@qymtech.com.br</p>
               </div>
             </div>
