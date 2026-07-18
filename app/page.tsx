@@ -172,7 +172,7 @@ export default function Home() {
           {/* Contact CTA */}
           <div className="hidden sm:flex items-center space-x-4">
             <a 
-              href="https://wa.me/5519999449438"
+              href="https://wa.me/5519994494386"
               target="_blank"
               rel="noopener noreferrer"
               className="px-5 py-2.5 rounded-lg text-xs font-bold bg-[#1A2E4A] hover:bg-[#111F33] text-white border border-[#C9A227]/30 transition-all duration-200 flex items-center space-x-2 shadow-sm"
@@ -218,7 +218,7 @@ export default function Home() {
                 
                 <div className="pt-2">
                   <a 
-                    href="https://wa.me/5519999449438"
+                    href="https://wa.me/5519994494386"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3 rounded-lg text-center font-bold bg-[#1A2E4A] text-white text-sm flex items-center justify-center space-x-2"
@@ -262,7 +262,7 @@ export default function Home() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-4 pt-4">
                 <a 
-                  href="https://wa.me/5519999449438"
+                  href="https://wa.me/5519994494386"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#1A2E4A] hover:bg-[#111F33] text-white font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2.5 shadow-lg shadow-[#1A2E4A]/20 border-b-2 border-[#C9A227]"
@@ -1087,7 +1087,7 @@ export default function Home() {
                       const text = encodeURIComponent(
                         `Olá QYM Tech! Geramos o diagnóstico de maturidade para ${municipality} (${stateAbbr}) com score de ${score}/100 e gostaríamos de um plano de modernização de leis.`
                       );
-                      window.open(`https://wa.me/5519999449438?text=${text}`, '_blank');
+                      window.open(`https://wa.me/5519994494386?text=${text}`, '_blank');
                     }}
                     className="px-6 py-3 rounded-lg bg-[#1A2E4A] hover:bg-[#111F33] text-white font-bold text-xs transition flex items-center justify-center space-x-1.5 cursor-pointer shadow-md"
                   >
@@ -1139,7 +1139,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
                 
                 <a 
-                  href="https://wa.me/5519999449438"
+                  href="https://wa.me/5519994494386"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-4 rounded-xl bg-[#C9A227] hover:bg-[#B38E1F] text-[#1A2E4A] font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
@@ -1150,7 +1150,7 @@ export default function Home() {
                 </a>
 
                 <a 
-                  href="tel:5519999449438"
+                  href="tel:5519994494386"
                   className="px-6 py-4 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/20 font-bold text-sm transition duration-200 flex items-center justify-center space-x-2"
                 >
                   <span>Ligar para Nós</span>
