@@ -224,7 +224,7 @@ export default function Home() {
                     className="w-full py-3 rounded-lg text-center font-bold bg-[#1A2E4A] text-white text-sm flex items-center justify-center space-x-2"
                   >
                     <Phone size={14} className="text-[#C9A227]" />
-                    <span>WhatsApp: (19) 99944-9438</span>
+                    <span>WhatsApp: (19) 99449-4386</span>
                   </a>
                 </div>
               </div>
