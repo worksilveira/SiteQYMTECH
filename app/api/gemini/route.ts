@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 
-// Initialize lazy-loaded client to prevent crashes if key is missing on startup
 let aiClient: GoogleGenAI | null = null;
 
 function getAiClient() {
@@ -9,122 +8,87 @@ function getAiClient() {
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
     throw new Error('GEMINI_API_KEY_MISSING');
   }
-  
   if (!aiClient) {
     aiClient = new GoogleGenAI({
       apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
+      httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
     });
   }
   return aiClient;
 }
 
+const requestCounts = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 10;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = requestCounts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    requestCounts.set(ip, { count: 1, resetAt: now + 3600000 });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(ip)) {
+      return Response.json({ error: 'Limite de requisições atingido. Tente novamente em 1 hora.' }, { status: 429 });
+    }
+
     let client;
     try {
       client = getAiClient();
     } catch (err: any) {
       if (err.message === 'GEMINI_API_KEY_MISSING') {
-        return Response.json(
-          { 
-            error: "A chave de API do Gemini está ausente. Configure GEMINI_API_KEY no menu Configurações > Secrets." 
-          }, 
-          { status: 401 }
-        );
+        return Response.json({ error: 'Chave de API ausente.' }, { status: 401 });
       }
       throw err;
     }
 
     const body = await req.json();
-    const { 
-      action, 
-      projectName, 
-      businessSector, 
-      targetAudience, 
-      mainGoals, 
-      customFeatures, 
-      budgetRange, 
-      query,
-      brandName = "Caio Silveira | Design & Tecnologia",
-      brandPhone = "(11) 98765-4321",
-      brandCnpj = "45.892.120/0001-34"
+    const {
+      action, projectName, businessSector, targetAudience,
+      mainGoals, customFeatures, budgetRange, query,
+      brandName = "QYM Tech",
+      brandPhone = "(19) 99944-9438",
+      brandCnpj = "68.004.772/0001-35"
     } = body;
 
     if (!action) {
-      return Response.json({ error: "Missing required parameter: action" }, { status: 400 });
+      return Response.json({ error: 'Parâmetro obrigatório ausente: action' }, { status: 400 });
     }
 
     const shortBrandName = brandName.split('|')[0].trim();
-
-    let finalPrompt = "";
-    let systemInstruction = `Você é o Diretor de Tecnologia e Estratégia da ${brandName}, uma agência boutique ultra-premium de design de alta costura, usabilidade e desenvolvimento de software de alta performance. Suas propostas são elegantes, altamente técnicas, realistas e inspiradoras. Sempre responda em português brasileiro com uma formatação impecável, cabeçalhos refinados, listas limpas e sem jargões genéricos. Mostre que a ${shortBrandName} possui o mais alto nível de engenharia e design de produto do mercado. Informações oficiais da empresa: CNPJ ${brandCnpj}, Telefone ${brandPhone}.`;
+    let finalPrompt = '';
     let useSearch = false;
+    let systemInstruction = `Você é especialista em gestão legislativa municipal da ${brandName}, empresa GovTech brasileira especializada em digitalização, compilação e publicação da legislação de câmaras municipais. Responda sempre em português brasileiro. CNPJ ${brandCnpj}, Telefone ${brandPhone}.`;
 
     if (action === 'generateBrief') {
       if (!projectName || !businessSector) {
-        return Response.json({ error: "Faltam parâmetros obrigatórios para gerar a proposta." }, { status: 400 });
+        return Response.json({ error: 'Faltam parâmetros obrigatórios.' }, { status: 400 });
       }
-
-      finalPrompt = `
-Gere uma proposta de projeto premium e personalizada da ${shortBrandName} para o seguinte cliente:
-
-- **Nome da Empresa / Projeto:** ${projectName}
-- **Setor do Mercado:** ${businessSector}
-- **Público-Alvo:** ${targetAudience || 'Geral / Premium'}
-- **Objetivos Principais:** ${mainGoals || 'Desenvolvimento de presença digital de alto impacto'}
-- **Funcionalidades Desejadas:** ${customFeatures || 'Não especificadas - sugira as melhores práticas para o setor'}
-- **Nível de Investimento Indicado:** ${budgetRange || 'Premium corporativo'}
-
-Sua proposta deve ser dividida nas seguintes seções elegantes:
-1. **Visão de Produto & Posicionamento:** Como o projeto se destacará de forma disruptiva no setor de ${businessSector}.
-2. **Solução Tecnológica Proposta:** Arquitetura recomendada pela ${shortBrandName} (ex: Next.js 15, IA generativa local, Cloud de alta performance) com justificativas sólidas.
-3. **Escopo de Experiência (UI/UX):** Foco no design de alta costura digital, usabilidade e taxas de conversão.
-4. **Cronograma Estimado:** Fases sugeridas (Descoberta, Design, Engenharia de Elite, Lançamento).
-5. **Por que a ${shortBrandName}:** Como nosso foco em engenharia de ponta, design refinado e compromisso profissional garante o sucesso do seu projeto.
-`;
-    } 
-    else if (action === 'analyseTrends') {
+      finalPrompt = `Gere uma proposta personalizada da ${shortBrandName} para:\n- Município: ${projectName}\n- Setor: ${businessSector}\n- Público: ${targetAudience || 'Gestores públicos e cidadãos'}\n- Objetivos: ${mainGoals || 'Modernização legislativa'}\n- Funcionalidades: ${customFeatures || 'Portal público, compilação, painel admin'}\n- Investimento: ${budgetRange || 'A definir'}\n\nEstruture em: 1. Diagnóstico 2. Solução QYM Tech 3. Escopo de entrega 4. Cronograma 5. Por que a QYM Tech.`;
+    } else if (action === 'analyseTrends') {
       if (!businessSector) {
-        return Response.json({ error: "O setor é obrigatório para análise de tendências." }, { status: 400 });
+        return Response.json({ error: 'Setor obrigatório.' }, { status: 400 });
       }
-      
-      finalPrompt = `
-Realize uma análise competitiva aprofundada e pesquisa de tendências atualizadas do mercado de ${businessSector} para o ano atual.
-Use as ferramentas de pesquisa para encontrar as novidades tecnológicas mais recentes e os players de maior destaque no setor.
-
-Sua análise deve conter:
-- **Tendências Emergentes (Design & Tecnologia):** O que há de mais moderno que a ${shortBrandName} pode implementar para este cliente.
-- **Diferenciais Competitivos:** Sugestões práticas de como nosso cliente pode superar os concorrentes atuais.
-- **Recomendações Estratégicas:** Quais tecnologias emergentes (ex: IA, Web3, computação de borda, interfaces 3D imersivas) trarão o maior retorno para este setor.
-`;
+      finalPrompt = `Analise o cenário de transparência legislativa em municípios brasileiros (${businessSector}). Inclua: obrigações legais, situação atual, oportunidades e recomendações prioritárias.`;
       useSearch = true;
-    } 
-    else if (action === 'consultPartner') {
+    } else if (action === 'consultPartner') {
       if (!query) {
-        return Response.json({ error: "A pergunta ou dúvida é obrigatória para o consultor." }, { status: 400 });
+        return Response.json({ error: 'Pergunta obrigatória.' }, { status: 400 });
       }
-
-      finalPrompt = `
-O cliente fez a seguinte pergunta de negócios / tecnologia para a equipe da ${brandName}:
-
-"${query}"
-
-Responda como um consultor sênior da ${brandName} (ou simplesmente ${shortBrandName}). Demonstre autoridade, conhecimento em arquitetura de sistemas moderna, design refinado e as melhores abordagens para resolver o problema apresentado.
-Seja objetivo, profissional e estimule o cliente a prosseguir com um agendamento ou com a geração do brief interativo na plataforma. Inclua sutilmente nosso telefone ${brandPhone} ou convide para agendamento.
-`;
-    } 
-    else {
+      finalPrompt = `Um gestor público perguntou: "${query}". Responda como especialista da QYM Tech e convide para contato pelo ${brandPhone}.`;
+    } else {
       return Response.json({ error: `Ação desconhecida: ${action}` }, { status: 400 });
     }
 
-    // Call the Gemini API
     const response = await client.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: 'gemini-2.0-flash',
       contents: finalPrompt,
       config: {
         systemInstruction,
@@ -133,32 +97,21 @@ Seja objetivo, profissional e estimule o cliente a prosseguir com um agendamento
       },
     });
 
-    const resultText = response.text || "Não foi possível gerar a resposta.";
-    
-    // Extract grounding chunks/cites if search grounding was used
+    const resultText = response.text || 'Não foi possível gerar a resposta.';
     let citations: any[] = [];
     if (useSearch) {
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
       if (chunks) {
         citations = chunks
-          .filter(chunk => chunk.web && chunk.web.uri)
-          .map(chunk => ({
-            title: chunk.web?.title || 'Referência de Mercado',
-            url: chunk.web?.uri,
-          }));
+          .filter((c: any) => c.web?.uri)
+          .map((c: any) => ({ title: c.web?.title || 'Referência', url: c.web?.uri }));
       }
     }
 
-    return Response.json({
-      text: resultText,
-      citations,
-    });
+    return Response.json({ text: resultText, citations });
 
   } catch (error: any) {
-    console.error("Gemini API error:", error);
-    return Response.json(
-      { error: error.message || "Ocorreu um erro ao processar sua solicitação no modelo Gemini." }, 
-      { status: 500 }
-    );
+    console.error('Gemini API error:', error);
+    return Response.json({ error: error.message || 'Erro ao processar.' }, { status: 500 });
   }
 }
